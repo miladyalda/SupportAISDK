@@ -30,7 +30,7 @@ Add to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/pocketjots/SupportAISDK.git", from: "1.0.0")
+    .package(url: "https://github.com/miladyalda/SupportAISDK.git", from: "1.0.0")
 ]
 ```
 
