@@ -84,12 +84,10 @@ public struct SupportAI {
 
 public struct SupportAIChatModifier: ViewModifier {
     
-    let configuration: SupportAIConfiguration
-    
     public func body(content: Content) -> some View {
         ZStack {
             content
-            ChatOverlayView(configuration: configuration)
+            ChatOverlayView()
         }
     }
 }
@@ -98,14 +96,14 @@ public struct SupportAIChatModifier: ViewModifier {
 
 public extension View {
     
-    /// Simple - just API key
-    func withSupportAIChat(apiKey: String) -> some View {
-        let configuration = SupportAIConfiguration(apiKey: apiKey)
-        return self.modifier(SupportAIChatModifier(configuration: configuration))
+    /// Uses shared configuration (call SupportAI.configure() first)
+    func withSupportAIChat() -> some View {
+        self.modifier(SupportAIChatModifier())
     }
     
-    /// Full configuration
-    func withSupportAIChat(configuration: SupportAIConfiguration) -> some View {
-        self.modifier(SupportAIChatModifier(configuration: configuration))
+    /// Simple - just API key (for quick setup without action handling)
+    func withSupportAIChat(apiKey: String) -> some View {
+        SupportAI.configure(apiKey: apiKey)
+        return self.modifier(SupportAIChatModifier())
     }
 }

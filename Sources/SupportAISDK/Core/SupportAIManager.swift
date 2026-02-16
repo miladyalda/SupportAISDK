@@ -27,7 +27,7 @@ public final class SupportAIManager: ObservableObject {
     
     // MARK: - Configuration
     
-    private var configuration: SupportAIConfiguration?
+    public private(set) var configuration: SupportAIConfiguration = SupportAIConfiguration(apiKey: "")
     private var service: SupportAIService?
     private var onCustomActionHandler: (@MainActor (ChatAction) -> Void)?
     
@@ -53,7 +53,7 @@ public final class SupportAIManager: ObservableObject {
         configuration: SupportAIConfiguration,
         onCustomAction: (@MainActor (ChatAction) -> Void)? = nil
     ) {
-        self.configuration = configuration
+        self.configuration = configuration  // No longer optional
         self.service = SupportAIService(configuration: configuration)
         self.onCustomActionHandler = onCustomAction
         
@@ -109,11 +109,12 @@ public final class SupportAIManager: ObservableObject {
     // MARK: - Messaging
     
     public func sendMessage(_ text: String) async {
-        guard let currentService = service,
-              let config = configuration else {
-            print("⚠️ SupportAISDK: Not configured")
+        guard let currentService = service else {
+            print("⚠️ SupportAISDK: Not configured. Call SupportAI.configure() first.")
             return
         }
+
+        let config = configuration  // No longer optional
         
         print("✅ [SupportAI] Endpoint: \(config.apiEndpoint)")
         print("✅ [SupportAI] API Key: \(config.apiKey.prefix(15))...")
@@ -255,8 +256,6 @@ public final class SupportAIManager: ObservableObject {
     // MARK: - New Chat
     
     public func startNewChat() {
-        guard let configuration = configuration else { return }
-        
         savedConversationId = nil
         conversationId = nil
         messages = [ChatMessage(

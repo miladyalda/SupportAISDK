@@ -43,7 +43,9 @@ public struct ChatOverlayView: View {
     
     @ObservedObject private var manager = SupportAIManager.shared
     
-    private let configuration: SupportAIConfiguration
+    private var configuration: SupportAIConfiguration {
+        manager.configuration
+    }
     
     @Namespace private var chatNamespace
     @State private var inputText = ""
@@ -60,9 +62,7 @@ public struct ChatOverlayView: View {
     )
     @GestureState private var buttonDragOffset: CGSize = .zero
     
-    public init(configuration: SupportAIConfiguration) {
-        self.configuration = configuration
-    }
+    public init() {}
     
     public var body: some View {
         GeometryReader { geometry in
@@ -303,7 +303,6 @@ public struct ChatOverlayView: View {
     private func resizeDragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                // Negative because dragging up should increase height
                 dragOffset = -value.translation.height
             }
             .onEnded { value in
@@ -311,16 +310,13 @@ public struct ChatOverlayView: View {
                 let threshold = geometry.size.height * 0.1
                 
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    // Determine new size based on drag direction and velocity
                     if velocity > threshold {
-                        // Dragged up - increase size
                         switch chatSize {
                         case .quarter: chatSize = .half
                         case .half: chatSize = .full
                         case .full: break
                         }
                     } else if velocity < -threshold {
-                        // Dragged down - decrease size or minimize
                         switch chatSize {
                         case .quarter: manager.minimize()
                         case .half: chatSize = .quarter
@@ -347,7 +343,6 @@ public struct ChatOverlayView: View {
                 newX = max(padding, min(geometry.size.width - padding, newX))
                 newY = max(padding + geometry.safeAreaInsets.top, min(geometry.size.height - padding - geometry.safeAreaInsets.bottom, newY))
                 
-                // Snap to edges
                 if newX < geometry.size.width / 2 {
                     newX = padding
                 } else {
