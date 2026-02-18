@@ -12,6 +12,7 @@ A plug-and-play AI-powered customer support chat SDK for iOS apps. Features a fl
 
 ## Features
 
+
 | Feature | Description |
 |---------|-------------|
 | 🔑 **Simple API Key Auth** | Just add your API key, like Stripe |
