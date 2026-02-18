@@ -227,6 +227,9 @@ public final class SupportAIManager: ObservableObject {
     // MARK: - Action Handling
     
     public func handleAction(_ action: ChatAction) {
+        // Notify to minimize chat to quarter
+        NotificationCenter.default.post(name: .supportAIActionTriggered, object: nil)
+        
         if let builtInType = action.builtInType {
             handleBuiltInAction(builtInType, action: action)
         } else {
