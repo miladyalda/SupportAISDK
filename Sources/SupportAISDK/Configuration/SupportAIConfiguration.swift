@@ -8,8 +8,9 @@ import Foundation
 public struct SupportAIConfiguration: Sendable {
     
     public let apiKey: String
-    public let apiEndpoint: String
+    public let endpoints: SupportAIEndpoints
     public let userId: String?
+    public let actions: [SupportAIAction]
     public let theme: SupportAITheme
     public let welcomeMessage: String
     public let inputPlaceholder: String
@@ -18,13 +19,11 @@ public struct SupportAIConfiguration: Sendable {
     public let allowButtonDrag: Bool
     public let hiddenOnScreens: [String]
     
-    /// Default API endpoint
-    public static let defaultEndpoint = "https://asksupportrest-k4n3dfwncq-uc.a.run.app"
-    
     public init(
         apiKey: String,
-        apiEndpoint: String? = nil,
+        endpoints: SupportAIEndpoints = .production,
         userId: String? = nil,
+        actions: [SupportAIAction] = [],
         theme: SupportAITheme = .default,
         welcomeMessage: String = "Hi! How can I help you today?",
         inputPlaceholder: String = "Message...",
@@ -34,8 +33,9 @@ public struct SupportAIConfiguration: Sendable {
         hiddenOnScreens: [String] = []
     ) {
         self.apiKey = apiKey
-        self.apiEndpoint = apiEndpoint ?? Self.defaultEndpoint
+        self.endpoints = endpoints
         self.userId = userId
+        self.actions = actions
         self.theme = theme
         self.welcomeMessage = welcomeMessage
         self.inputPlaceholder = inputPlaceholder

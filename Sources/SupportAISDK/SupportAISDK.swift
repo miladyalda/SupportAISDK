@@ -12,7 +12,9 @@ public struct SupportAI {
     /// Simple configuration with just API key
     public static func configure(
         apiKey: String,
+        endpoints: SupportAIEndpoints = .production,
         userId: String? = nil,
+        actions: [SupportAIAction] = [],
         theme: SupportAITheme = .default,
         welcomeMessage: String = "Hi! How can I help you today?",
         headerTitle: String = "Support",
@@ -21,7 +23,9 @@ public struct SupportAI {
     ) {
         let configuration = SupportAIConfiguration(
             apiKey: apiKey,
+            endpoints: endpoints,
             userId: userId,
+            actions: actions,
             theme: theme,
             welcomeMessage: welcomeMessage,
             headerTitle: headerTitle,

@@ -13,13 +13,63 @@ public final class SupportAIService: Sendable {
         self.configuration = configuration
     }
     
+    // MARK: - Configure Actions
+    
+    /// Send custom actions to the backend
+    public func configureActions() async throws {
+        // Skip if no custom actions
+        guard !configuration.actions.isEmpty else {
+            print("ℹ️ [SupportAI] No custom actions to configure")
+            return
+        }
+        
+        guard let url = URL(string: configuration.endpoints.configureActions) else {
+            throw SupportAIError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(configuration.apiKey, forHTTPHeaderField: "X-API-Key")
+        
+        let body: [String: Any] = [
+            "actions": configuration.actions.map { $0.dictionary }
+        ]
+        
+        let jsonData = try JSONSerialization.data(withJSONObject: body)
+        request.httpBody = jsonData
+        
+        print("🔧 [SupportAI] Configuring \(configuration.actions.count) action(s)...")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw SupportAIError.invalidResponse
+        }
+        
+        switch httpResponse.statusCode {
+        case 200...299:
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("✅ [SupportAI] Actions configured: \(responseString)")
+            }
+        case 401:
+            throw SupportAIError.invalidAPIKey
+        case 403:
+            throw SupportAIError.forbidden
+        default:
+            throw SupportAIError.httpError(statusCode: httpResponse.statusCode)
+        }
+    }
+    
+    // MARK: - Send Message
+    
     /// Send messages to the API and get response
     public func sendMessage(
         messages: [ChatMessage],
         conversationId: String?
     ) async throws -> ChatResponse {
         
-        guard let url = URL(string: configuration.apiEndpoint) else {
+        guard let url = URL(string: configuration.endpoints.chat) else {
             throw SupportAIError.invalidURL
         }
         
@@ -88,6 +138,8 @@ public final class SupportAIService: Sendable {
         
         return try parseResponse(data: data)
     }
+    
+    // MARK: - Parse Response
     
     private func parseResponse(data: Data) throws -> ChatResponse {
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {

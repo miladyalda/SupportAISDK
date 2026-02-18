@@ -19,6 +19,7 @@ public final class SupportAIManager: ObservableObject {
     @Published public var isLoading: Bool = false
     @Published public var hasUnreadMessages: Bool = false
     @Published public private(set) var conversationId: String?
+    @Published public var isConfigured: Bool = false
     
     // MARK: - Share Sheet State
     
@@ -53,7 +54,7 @@ public final class SupportAIManager: ObservableObject {
         configuration: SupportAIConfiguration,
         onCustomAction: (@MainActor (ChatAction) -> Void)? = nil
     ) {
-        self.configuration = configuration  // No longer optional
+        self.configuration = configuration
         self.service = SupportAIService(configuration: configuration)
         self.onCustomActionHandler = onCustomAction
         
@@ -68,6 +69,27 @@ public final class SupportAIManager: ObservableObject {
                 content: configuration.welcomeMessage,
                 role: .assistant
             ))
+        }
+        
+        // Configure actions on backend
+        Task {
+            await configureActionsOnBackend()
+        }
+    }
+    
+    // MARK: - Configure Actions
+    
+    private func configureActionsOnBackend() async {
+        guard let service = service else { return }
+        
+        do {
+            try await service.configureActions()
+            isConfigured = true
+            print("✅ [SupportAI] SDK configured successfully")
+        } catch {
+            print("⚠️ [SupportAI] Failed to configure actions: \(error.localizedDescription)")
+            // Still mark as configured - chat will work, just without custom actions
+            isConfigured = true
         }
     }
     
@@ -114,9 +136,9 @@ public final class SupportAIManager: ObservableObject {
             return
         }
 
-        let config = configuration  // No longer optional
+        let config = configuration
         
-        print("✅ [SupportAI] Endpoint: \(config.apiEndpoint)")
+        print("✅ [SupportAI] Endpoint: \(config.endpoints.chat)")
         print("✅ [SupportAI] API Key: \(config.apiKey.prefix(15))...")
         
         let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -1,6 +1,6 @@
 # SupportAI SDK
 
-A plug-and-play AI-powered customer support chat SDK for iOS apps. Features a floating chat button with smooth morphing animations, API key authentication, and full customization.
+A plug-and-play AI-powered customer support chat SDK for iOS apps. Features a floating chat button with smooth morphing animations, API key authentication, dynamic action buttons, and full customization.
 
 [![iOS 15+](https://img.shields.io/badge/iOS-15%2B-blue)](https://developer.apple.com/ios/)
 [![Swift 5.7+](https://img.shields.io/badge/Swift-5.7%2B-orange)](https://swift.org/)
@@ -18,6 +18,7 @@ A plug-and-play AI-powered customer support chat SDK for iOS apps. Features a fl
 | 🎯 **Floating Chat Button** | Draggable, always accessible |
 | 💬 **Full Chat Interface** | Smooth morphing animation |
 | 🎨 **Fully Customizable** | Colors, text, icons |
+| 🤖 **AI-Powered Actions** | Define actions, AI decides when to show them |
 | 🔘 **Built-in Actions** | URL, copy, call, email, share handled automatically |
 | 🧩 **Custom Actions** | App-specific actions via callback |
 | 📱 **iOS 15+** | Wide compatibility |
@@ -40,7 +41,7 @@ dependencies: [
 1. Go to **File → Add Package Dependencies**
 2. Enter the repository URL:
    ```
-   https://github.com/pocketjots/SupportAISDK.git
+   https://github.com/miladyalda/SupportAISDK.git
    ```
 3. Select version **1.0.0** or later
 4. Click **Add Package**
@@ -72,6 +73,20 @@ struct MyApp: App {
     init() {
         SupportAI.configure(
             apiKey: "sk_live_your_api_key_here",
+            actions: [
+                SupportAIAction(
+                    id: "open_settings",
+                    label: "Open Settings",
+                    description: "Opens the app settings screen",
+                    icon: "gearshape"
+                ),
+                SupportAIAction(
+                    id: "show_pricing",
+                    label: "View Pricing",
+                    description: "Shows pricing and subscription options",
+                    icon: "creditcard"
+                )
+            ],
             theme: .custom(primaryColor: "#007AFF"),
             headerTitle: "Support",
             headerSubtitle: "We're here to help",
@@ -80,8 +95,8 @@ struct MyApp: App {
                 case "open_settings":
                     // Navigate to settings
                     break
-                case "create_ticket":
-                    // Show ticket form
+                case "show_pricing":
+                    // Show pricing screen
                     break
                 default:
                     break
@@ -93,7 +108,7 @@ struct MyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .withSupportAIChat(apiKey: "sk_live_your_api_key_here")
+                .withSupportAIChat()
         }
     }
 }
@@ -101,7 +116,7 @@ struct MyApp: App {
 
 ### 3. That's it! 🎉
 
-A floating chat button will appear on all screens.
+A floating chat button will appear on all screens. The AI will automatically show action buttons when relevant to the conversation.
 
 > [!TIP]
 > You can programmatically control the chat using `SupportAI.show()`, `SupportAI.hide()`, `SupportAI.expand()`, and `SupportAI.minimize()`.
@@ -113,6 +128,9 @@ A floating chat button will appear on all screens.
 ```swift
 SupportAI.configure(
     apiKey: "sk_live_...",
+    actions: [
+        SupportAIAction(id: "help", label: "Get Help", description: "Shows help options")
+    ],
     onCustomAction: { action in
         // Handle custom actions
     }
@@ -127,8 +145,22 @@ SupportAI.configure(
 ```swift
 let config = SupportAIConfiguration(
     apiKey: "sk_live_...",
-    apiEndpoint: "https://your-api.com/v1/chat",
+    endpoints: .production,  // or custom endpoints
     userId: "user_123",
+    actions: [
+        SupportAIAction(
+            id: "open_settings",
+            label: "Open Settings",
+            description: "Opens the app settings screen",
+            icon: "gearshape"
+        ),
+        SupportAIAction(
+            id: "create_ticket",
+            label: "Create Ticket",
+            description: "Creates a support ticket for complex issues",
+            icon: "ticket"
+        )
+    ],
     theme: .custom(primaryColor: "#FF5722"),
     welcomeMessage: "Hi! 👋 How can I help?",
     inputPlaceholder: "Type a message...",
@@ -152,14 +184,38 @@ SupportAI.configure(
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `apiKey` | `String` | **Required** | Your API key |
-| `apiEndpoint` | `String?` | Default endpoint | Custom API endpoint |
+| `endpoints` | `SupportAIEndpoints` | `.production` | API endpoints configuration |
 | `userId` | `String?` | `nil` | User ID for conversation tracking |
+| `actions` | `[SupportAIAction]` | `[]` | Custom actions the AI can trigger |
 | `theme` | `SupportAITheme` | `.default` | Visual customization |
 | `welcomeMessage` | `String` | `"Hi! How can I help you today?"` | First message shown |
 | `inputPlaceholder` | `String` | `"Message..."` | Input field placeholder |
 | `headerTitle` | `String` | `"Support"` | Chat header title |
 | `headerSubtitle` | `String` | `"Ask me anything"` | Chat header subtitle |
 | `allowButtonDrag` | `Bool` | `true` | Allow dragging floating button |
+
+### Custom Endpoints
+
+For self-hosted backends:
+
+```swift
+// Separate URLs
+let endpoints = SupportAIEndpoints(
+    chat: "https://your-api.com/chat",
+    configureActions: "https://your-api.com/configureActions"
+)
+
+// Or shared base URL
+let endpoints = SupportAIEndpoints(
+    baseURL: "https://your-api.com"
+)
+
+SupportAI.configure(
+    apiKey: "sk_live_...",
+    endpoints: endpoints,
+    // ...
+)
+```
 
 ### Theme Customization
 
@@ -189,10 +245,10 @@ Or use presets:
 ## Programmatic Control
 
 ```swift
-SupportAI.show()        // Show the floating button
-SupportAI.hide()        // Hide the floating button
-SupportAI.expand()      // Open the chat interface
-SupportAI.minimize()    // Minimize to floating button
+SupportAI.show()         // Show the floating button
+SupportAI.hide()         // Hide the floating button
+SupportAI.expand()       // Open the chat interface
+SupportAI.minimize()     // Minimize to floating button
 SupportAI.startNewChat() // Start a new conversation
 ```
 
@@ -200,9 +256,64 @@ SupportAI.startNewChat() // Start a new conversation
 
 The SDK supports two types of actions:
 
+### Defining Custom Actions
+
+Custom actions are defined when configuring the SDK. The AI automatically decides when to show them based on the conversation:
+
+```swift
+SupportAI.configure(
+    apiKey: "sk_live_...",
+    actions: [
+        SupportAIAction(
+            id: "open_settings",           // Unique identifier
+            label: "Open Settings",         // Button label
+            description: "Opens the app settings screen",  // AI uses this to decide when to show
+            icon: "gearshape"              // SF Symbol (optional)
+        ),
+        SupportAIAction(
+            id: "show_order",
+            label: "View Order",
+            description: "Shows order details and tracking information",
+            icon: "shippingbox"
+        ),
+        SupportAIAction(
+            id: "contact_human",
+            label: "Talk to Human",
+            description: "Connects user to a human support agent",
+            icon: "person"
+        )
+    ],
+    onCustomAction: { action in
+        switch action.id {
+        case "open_settings":
+            // Navigate to settings
+            break
+        case "show_order":
+            // Show order screen
+            break
+        case "contact_human":
+            // Connect to human agent
+            break
+        default:
+            break
+        }
+    }
+)
+```
+
+### SupportAIAction Properties
+
+| Property | Type | Required | Description |
+|----------|------|:--------:|-------------|
+| `id` | `String` | ✅ | Unique identifier for the action |
+| `label` | `String` | ✅ | Button label shown to user |
+| `description` | `String` | ✅ | Description for AI to understand when to use |
+| `icon` | `String?` | ❌ | SF Symbol name |
+| `data` | `[String: String]?` | ❌ | Additional data |
+
 ### Built-in Actions
 
-These are handled automatically by the SDK:
+These are handled automatically by the SDK (no configuration needed):
 
 | Action ID | Description | Data |
 |-----------|-------------|------|
@@ -213,104 +324,50 @@ These are handled automatically by the SDK:
 | `share` | Opens share sheet | `{ "text": "..." }` |
 | `dismiss` | Minimizes chat | — |
 
-### Custom Actions
+### Handling Custom Actions
 
-Any action ID not in the built-in list is passed to your `onCustomAction` handler:
+Custom actions (any action not in the built-in list) are passed to your `onCustomAction` handler:
 
 ```swift
-SupportAI.configure(
-    apiKey: "sk_live_...",
-    onCustomAction: { action in
-        // action.id    → The action identifier
-        // action.label → Display label
-        // action.icon  → SF Symbol name (optional)
-        // action.data  → Additional data (optional)
-        
-        switch action.id {
-        case "open_esims":
-            navigator.goToEsims()
-        case "create_ticket":
-            showTicketForm()
-        case "view_order":
-            if let orderId = action.data?["orderId"] {
-                showOrder(orderId)
-            }
-        default:
-            print("Unknown action: \(action.id)")
+onCustomAction: { action in
+    // action.id    → The action identifier
+    // action.label → Display label
+    // action.icon  → SF Symbol name (optional)
+    // action.data  → Additional data (optional)
+    
+    switch action.id {
+    case "open_settings":
+        navigator.goToSettings()
+    case "show_order":
+        if let orderId = action.data?["orderId"] {
+            showOrder(orderId)
         }
+    default:
+        print("Unknown action: \(action.id)")
     }
-)
-```
-
-## Backend Integration
-
-### Request Format
-
-The SDK sends requests to your backend:
-
-```http
-POST /v1/chat
-Content-Type: application/json
-X-API-Key: sk_live_abc123...
-X-User-ID: user_123
-```
-
-```json
-{
-    "messages": [
-        { "role": "user", "content": "How do I change app language?" },
-        { "role": "assistant", "content": "To open..." },
-        { "role": "user", "content": "What about iPhone?" }
-    ],
-    "conversationId": "conv_abc123"
 }
 ```
-
-### Response Format
-
-Your backend should return:
-
-```json
-{
-    "answer": "To open app settings, go to Settings > General > App...",
-    "conversationId": "conv_abc123",
-    "actions": [
-        {
-            "type": "open_url",
-            "label": "View Guide",
-            "icon": "book",
-            "data": { "url": "https://example.com/guide" }
-        },
-        {
-            "type": "open_settings",
-            "label": "Open App Settings",
-            "icon": "gearshape"
-        }
-    ]
-}
-```
-
-### Action Object Schema
-
-| Field | Type | Required | Description |
-|-------|------|:--------:|-------------|
-| `type` | `String` | ✅ | Action identifier |
-| `label` | `String` | ✅ | Button label |
-| `icon` | `String` | ❌ | SF Symbol name |
-| `data` | `Object` | ❌ | Additional data |
 
 ## Architecture
 
 ```
 ┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
-│    iOS App      │         │  Your Backend   │         │    Claude AI    │
-│     (SDK)       │         │   (REST API)    │         │                 │
+│    iOS App      │         │  SupportAI API  │         │   Gemini AI     │
+│     (SDK)       │         │   (Backend)     │         │                 │
 └────────┬────────┘         └────────┬────────┘         └────────┬────────┘
+         │                           │                           │
+         │  Configure actions        │                           │
+         │  POST /configureActions   │                           │
+         │ ─────────────────────────>│                           │
+         │                           │  Store actions            │
+         │  ✓ Actions configured     │                           │
+         │ <─────────────────────────│                           │
          │                           │                           │
          │  POST /chat               │                           │
          │  X-API-Key: sk_live_...   │                           │
          │ ─────────────────────────>│                           │
          │                           │  Generate response        │
+         │                           │  (with function calling)  │
          │                           │ ─────────────────────────>│
          │                           │                           │
          │                           │  Response + actions       │
@@ -327,6 +384,90 @@ Your backend should return:
          │  User taps custom         │                           │
          │  → App handles it         │                           │
 ```
+
+## Backend Integration
+
+### Endpoints
+
+The SDK communicates with two endpoints:
+
+#### 1. Configure Actions
+
+Called automatically when SDK initializes with custom actions.
+
+```http
+POST /configureActions
+Content-Type: application/json
+X-API-Key: sk_live_abc123...
+```
+
+```json
+{
+    "actions": [
+        {
+            "id": "open_settings",
+            "label": "Open Settings",
+            "description": "Opens the app settings screen",
+            "icon": "gearshape"
+        }
+    ]
+}
+```
+
+**Response:**
+
+```json
+{
+    "success": true,
+    "actionCount": 1,
+    "message": "Configured 1 custom action(s)"
+}
+```
+
+#### 2. Chat
+
+Called for each message sent.
+
+```http
+POST /chat
+Content-Type: application/json
+X-API-Key: sk_live_abc123...
+X-User-ID: user_123
+```
+
+```json
+{
+    "messages": [
+        { "role": "user", "content": "How do I change my settings?" }
+    ],
+    "conversationId": "conv_abc123"
+}
+```
+
+**Response:**
+
+```json
+{
+    "answer": "You can change your settings in the app settings screen. Would you like me to open it for you?",
+    "conversationId": "conv_abc123",
+    "actions": [
+        {
+            "type": "open_settings",
+            "label": "Open Settings",
+            "icon": "gearshape"
+        }
+    ]
+}
+```
+
+### Action Response Schema
+
+| Field | Type | Required | Description |
+|-------|------|:--------:|-------------|
+| `type` | `String` | ✅ | Action identifier |
+| `label` | `String` | ✅ | Button label |
+| `icon` | `String` | ❌ | SF Symbol name |
+| `data` | `Object` | ❌ | Additional data |
 
 ## Error Handling
 
@@ -347,8 +488,10 @@ Make sure you've added the `.withSupportAIChat()` modifier to your root view:
 
 ```swift
 ContentView()
-    .withSupportAIChat(apiKey: "sk_live_...")
+    .withSupportAIChat()
 ```
+
+And that you've called `SupportAI.configure()` before the view loads.
 
 </details>
 
@@ -360,11 +503,22 @@ Ensure you've configured the `onCustomAction` handler in `SupportAI.configure()`
 ```swift
 SupportAI.configure(
     apiKey: "sk_live_...",
+    actions: [...],
     onCustomAction: { action in
         print("Action received: \(action.id)")
     }
 )
 ```
+
+</details>
+
+<details>
+<summary><strong>Actions not appearing in chat</strong></summary>
+
+1. Make sure you've defined actions with clear descriptions
+2. The AI decides when to show actions based on the conversation
+3. Check console logs for "Actions configured" message
+4. Try asking questions that relate to your action descriptions
 
 </details>
 
